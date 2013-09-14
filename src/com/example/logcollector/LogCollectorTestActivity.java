@@ -1,11 +1,13 @@
 package com.example.logcollector;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -21,10 +24,13 @@ public class LogCollectorTestActivity extends Activity {
 	
 	private static final String TAG = "LogCollectorTestActivity";
 	
-	private Button exec;
+	private Button exec, disable, clear;
 	private EditText command;
 	private TextView result;
 	private ScrollView scroll;
+	private RadioButton path;
+	
+	private boolean stopPrintLog = false;
 	
 	private enum STATUS{
 		OK,
@@ -39,6 +45,8 @@ public class LogCollectorTestActivity extends Activity {
         findView();
         setOnclickListenerOnButton();
         command.setText("logcat -v threadtime");
+        command.setEnabled(false);
+        command.setFocusable(false);
     }
 
 
@@ -50,12 +58,16 @@ public class LogCollectorTestActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				result.setText("");
-				Intent request = new Intent(LogCollectorTestActivity.this, LogCollectorService.class);
-				Log.d(TAG, command.getText().toString());
-				String[] param = command.getText().toString().split(" ");
-				request.putExtra("format", param);
-				LogCollectorTestActivity.this.startService(request);
-				
+				String path = getAvailablePath();
+				if(path != null) {
+					Intent request = new Intent(LogCollectorTestActivity.this, LogCollectorService.class);
+					Log.d(TAG, command.getText().toString());
+					String[] param = command.getText().toString().split(" ");
+					request.putExtra("format", param);
+					request.putExtra("path", path);
+					LogCollectorTestActivity.this.startService(request);
+					setCatchingLogMode(false);
+				}
 				new Thread() {
 
 					@Override
@@ -68,6 +80,74 @@ public class LogCollectorTestActivity extends Activity {
 				
 			}
 		});
+		
+		disable.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent stopService = new Intent(LogCollectorTestActivity.this, LogCollectorService.class);
+				LogCollectorTestActivity.this.stopService(stopService);
+				setCatchingLogMode(true);
+			}
+			
+		});
+		
+		clear.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				removeSavedLog();
+			}
+			
+		});
+	}
+
+	protected void setCatchingLogMode(boolean b) {
+		// TODO Auto-generated method stub
+		stopPrintLog = b;
+		exec.setEnabled(b);
+		clear.setEnabled(b);
+	}
+
+
+	protected void removeSavedLog() {
+		// TODO Auto-generated method stub
+		Log.d(TAG, "remove all save logs.");
+		String path = getAvailablePath();
+		File logsDir = new File(path);
+		File[] logFiles = logsDir.listFiles();
+		int count = logFiles.length;
+		for(int i = 0; i < count; i ++)
+			logFiles[i].delete();
+	}
+
+	@Override
+	public void onBackPressed() {
+		// TODO Auto-generated method stub
+		this.moveTaskToBack(true);
+	}
+
+
+	protected String getAvailablePath() {
+		// TODO Auto-generated method stub
+		String state = Environment.getExternalStorageState();
+		String path = null;
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+		    // We can read and write the media
+			path = Environment.getExternalStoragePublicDirectory(
+		            Environment.DIRECTORY_DOWNLOADS).getPath() + "/log";
+			
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+		    // We can only read the media
+			result.setText("Read only sd card.");
+		} else {
+			result.setText("Cannot find sd card.");
+		    // Something else is wrong. It may be one of many other states, but all we need
+		    //  to know is we can neither read nor write
+		}
+		return path;
 	}
 
 
@@ -113,6 +193,8 @@ public class LogCollectorTestActivity extends Activity {
 					});
 				}
 				Thread.yield();
+				if(stopPrintLog)
+					break;
 			} while(temp != -1);
 			
 		} catch (IOException e) {
@@ -187,6 +269,8 @@ public class LogCollectorTestActivity extends Activity {
 		command = (EditText)findViewById(R.id.command);
 		result = (TextView)findViewById(R.id.result);
 		scroll = (ScrollView)findViewById(R.id.view_result_in_scroll);
+		disable = (Button)findViewById(R.id.disable_log_collect);
+		clear = (Button)findViewById(R.id.clear_log);
 	}
 
 

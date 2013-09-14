@@ -29,20 +29,52 @@
             android:text="exec" />
     </LinearLayout>
 
+    <RadioGroup
+        android:id="@+id/log_path"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <RadioButton
+            android:id="@+id/internal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:checked="true"
+            android:text="save log to path : /sdcard/Download/log/" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="RadioButton"
+            android:visibility="gone" />
+    </RadioGroup>
+
     <ScrollView
         android:id="@+id/view_result_in_scroll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:stackFromBottom="true"
-        android:transcriptMode="alwaysScroll"
-        android:layout_weight="1" >
+        android:transcriptMode="alwaysScroll" >
 
         <TextView
             android:id="@+id/result"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/hello_world" />
-
     </ScrollView>
+
+    <Button
+        android:id="@+id/disable_log_collect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Disable log collect" />
+
+    <Button
+        android:id="@+id/clear_log"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Clear all saved log" />
 
 </LinearLayout>
