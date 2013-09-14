@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -37,6 +38,7 @@ public class LogCollectorTestActivity extends Activity {
         
         findView();
         setOnclickListenerOnButton();
+        command.setText("logcat -v threadtime");
     }
 
 
@@ -48,6 +50,12 @@ public class LogCollectorTestActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				result.setText("");
+				Intent request = new Intent(LogCollectorTestActivity.this, LogCollectorService.class);
+				Log.d(TAG, command.getText().toString());
+				String[] param = command.getText().toString().split(" ");
+				request.putExtra("format", param);
+				LogCollectorTestActivity.this.startService(request);
+				
 				new Thread() {
 
 					@Override
@@ -58,15 +66,6 @@ public class LogCollectorTestActivity extends Activity {
 					
 				}.start();
 				
-				new Thread() {
-					int count = 0;
-					public void run() {
-						while(true) {
-							Log.d(TAG, "test log ### count = " + count ++);
-							Thread.yield();
-						}
-					}
-				}.start();
 			}
 		});
 	}
@@ -76,22 +75,15 @@ public class LogCollectorTestActivity extends Activity {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "########execCammand");
 		
-		//ActivityManager:I LogCollectorTestActivity:D *:S
+		//ActivityManager:I LogCollectorTestActivity:D *:S new String[] {"logcat","-d -v", "threadtime"}
 		try {
-			Process p = Runtime.getRuntime().exec(new String[] {"logcat","-d", "ActivityManager:I LogCollectorTestActivity:D *:S"});
-//			int s = p.waitFor();
-//			Log.d(TAG, "########execCammand : " + s);
-			STATUS status = checkResultStatus(p.getErrorStream());
-			if(status == STATUS.OK)
-				printResult(p.getInputStream());
+			Process p = Runtime.getRuntime().exec(command.getText().toString().split(" "));
+			printResult(p.getInputStream());
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} /*catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
+		} 
 	}
 
 	private void printResult(InputStream inputStream) {
@@ -101,10 +93,11 @@ public class LogCollectorTestActivity extends Activity {
 		InputStreamReader inReader = new InputStreamReader(inputStream);
 		BufferedReader buffReader = new BufferedReader(inReader);
 		int temp = -1;
-		char[] buff = new char[256];
+		
 		String str = null;
 		try {
 			do {
+				char[] buff = new char[256];
 				temp = buffReader.read(buff);
 //				str = buffReader.readLine();
 				if(temp != -1) {
@@ -116,15 +109,11 @@ public class LogCollectorTestActivity extends Activity {
 							// TODO Auto-generated method stub
 							result.setText("");
 							result.append(new String(b));
-//							int offset = result.getMeasuredHeight() - scroll.getHeight();
-//							scroll.setSmoothScrollingEnabled(true);
-//							scroll.fullScroll(View.FOCUS_DOWN);
-							scroll.scrollTo(0, 10000000);
 						}
 					});
 				}
 				Thread.yield();
-			} while(true);
+			} while(temp != -1);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
