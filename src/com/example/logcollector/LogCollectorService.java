@@ -30,6 +30,7 @@ public class LogCollectorService extends Service {
 	private static String path = null;
 	private static int id = 1000;
 	private Process catchLog = null;
+	private String globlePriority = "*:V";
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -100,7 +101,7 @@ public class LogCollectorService extends Service {
 		array.add(getNewFile());
 		array.add("-r");
 		array.add("" + 5 * 1024);
-		
+		array.add(globlePriority);
 		return array;
 	}
 
@@ -205,6 +206,8 @@ public class LogCollectorService extends Service {
 		// TODO Auto-generated method stub
 		format = intent.getStringArrayExtra("format");
 		path = intent.getStringExtra("path");
+		globlePriority = intent.getStringExtra("globle_priority");
+		Log.d(TAG, "path : " + path + " [globlePriority] : " + globlePriority);
 		collectLogInBackground();
 		return Service.START_STICKY;
 	}

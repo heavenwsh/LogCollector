@@ -20,15 +20,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:ems="10" />
+            android:ems="10" 
+            android:inputType="text"/>
 
-        <Button
-            android:id="@+id/exec"
+        <Spinner
+            android:id="@+id/globle_priority"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="exec" />
+            android:entries="@array/priority_array"
+            tools:listitem="@android:layout/simple_spinner_dropdown_item" />
+
     </LinearLayout>
 
+    <Button
+            android:id="@+id/add_filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="+ TAG Filter" />
+    
     <RadioGroup
         android:id="@+id/log_path"
         android:layout_width="match_parent"
@@ -64,6 +74,12 @@
             android:layout_height="wrap_content"
             android:text="@string/hello_world" />
     </ScrollView>
+
+    <Button
+        android:id="@+id/exec"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start log clollect" />
 
     <Button
         android:id="@+id/disable_log_collect"
