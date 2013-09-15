@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.Date;
 
 import android.app.Notification;
@@ -28,6 +29,7 @@ public class LogCollectorService extends Service {
 	private static String[] format = null;
 	private static String path = null;
 	private static int id = 1000;
+	private Process catchLog = null;
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -78,14 +80,36 @@ public class LogCollectorService extends Service {
 
 	protected void execCommand() {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "########execCammand");
+		Log.d(TAG, "########execCammand+++++++");
 		try {
-			Process p = Runtime.getRuntime().exec(format);
-			writeLogToLocal(p.getInputStream());
+			ArrayList<String> logFilter = writeLogToLocalByLogcat();
+			catchLog = Runtime.getRuntime().exec(logFilter.toArray(new String[0]));
+//			writeLogToLocal(p.getInputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Log.d(TAG, "########execCammand--------");
+	}
+	
+	private synchronized ArrayList<String> writeLogToLocalByLogcat() {
+		ArrayList<String> array = new ArrayList<String>();
+		for(String item : format) 
+			array.add(item);
+		array.add("-f");
+		array.add(getNewFile());
+		array.add("-r");
+		array.add("" + 5 * 1024);
+		
+		return array;
+	}
+
+	private String getNewFile() {
+		// TODO Auto-generated method stub
+		File fpath = new File(path);
+		fpath.mkdirs();
+		String fileName = getFileName();
+		return fpath + "/" + fileName +".txt";
 	}
 
 	private synchronized void writeLogToLocal(InputStream inputStream) {
@@ -157,8 +181,21 @@ public class LogCollectorService extends Service {
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
-		isServiceDestroyed = true;
-		this.stopForeground(true);
+		
+		try {
+			isServiceDestroyed = true;
+			Process p = Runtime.getRuntime().exec("logcat -c".split(" "));
+			p.waitFor();
+			catchLog.destroy();
+			this.stopForeground(true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		Log.d(TAG, "service is onDestroy");
 		super.onDestroy();
 	}

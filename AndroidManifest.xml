@@ -19,6 +19,8 @@
             android:name="com.example.logcollector.LogCollectorTestActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance"
+            android:configChanges="orientation|keyboardHidden"
+            android:screenOrientation="portrait"
             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

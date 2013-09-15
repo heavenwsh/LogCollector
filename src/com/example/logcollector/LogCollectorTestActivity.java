@@ -116,6 +116,8 @@ public class LogCollectorTestActivity extends Activity {
 		// TODO Auto-generated method stub
 		Log.d(TAG, "remove all save logs.");
 		String path = getAvailablePath();
+		if(path == null)
+			return;
 		File logsDir = new File(path);
 		File[] logFiles = logsDir.listFiles();
 		int count = logFiles.length;
@@ -176,19 +178,20 @@ public class LogCollectorTestActivity extends Activity {
 		
 		String str = null;
 		try {
+			char[] buff = new char[256];
 			do {
-				char[] buff = new char[256];
 				temp = buffReader.read(buff);
 //				str = buffReader.readLine();
 				if(temp != -1) {
 					final char[] b = buff;
+					final int count = temp;
 					this.runOnUiThread(new Runnable() {
 
 						@Override
 						public void run() {
 							// TODO Auto-generated method stub
 							result.setText("");
-							result.append(new String(b));
+							result.append(new String(b, 0, count));
 						}
 					});
 				}
@@ -272,7 +275,6 @@ public class LogCollectorTestActivity extends Activity {
 		disable = (Button)findViewById(R.id.disable_log_collect);
 		clear = (Button)findViewById(R.id.clear_log);
 	}
-
 
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
